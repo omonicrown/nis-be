@@ -52,7 +52,7 @@ class AuthController extends Controller
                     'nis_membership_id'      => $validated['nis_membership_id'] ?? null,
                     'membership_category_id' => $validated['membership_category_id'],
                     'role_id'                => $memberRole?->id,
-                    'password'               => $validated['password'],
+                    'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
                     'status'                 => UserStatus::PENDING,
                 ]);
 
@@ -82,7 +82,6 @@ class AuthController extends Controller
             return $this->created([
                 'user' => new UserResource($user),
             ], 'Registration successful. Your account is pending admin approval.');
-
         } catch (\Exception $e) {
             return $this->error('Registration failed. Please try again.', 500);
         }
@@ -177,7 +176,11 @@ class AuthController extends Controller
         DB::transaction(function () use ($user, $validated) {
             // Update user fields
             $userFields = collect($validated)->only([
-                'first_name', 'last_name', 'other_names', 'phone', 'gender',
+                'first_name',
+                'last_name',
+                'other_names',
+                'phone',
+                'gender',
             ])->filter()->toArray();
 
             if (!empty($userFields)) {
@@ -186,10 +189,18 @@ class AuthController extends Controller
 
             // Update or create profile
             $profileFields = collect($validated)->only([
-                'office_address', 'residential_address', 'date_of_birth',
-                'bio', 'specialization', 'firm_name', 'year_of_registration',
-                'show_email', 'show_phone', 'show_office_address',
-                'show_residential_address', 'show_in_directory',
+                'office_address',
+                'residential_address',
+                'date_of_birth',
+                'bio',
+                'specialization',
+                'firm_name',
+                'year_of_registration',
+                'show_email',
+                'show_phone',
+                'show_office_address',
+                'show_residential_address',
+                'show_in_directory',
             ])->toArray();
 
             if (!empty($profileFields)) {

@@ -15,9 +15,7 @@ class MemberProfile extends Model
         'show_residential_address', 'show_in_directory',
     ];
 
-    protected function casts(): array
-    {
-        return [
+    protected $casts = [
             'date_of_birth' => 'date',
             'show_email' => 'boolean',
             'show_phone' => 'boolean',
@@ -25,7 +23,6 @@ class MemberProfile extends Model
             'show_residential_address' => 'boolean',
             'show_in_directory' => 'boolean',
         ];
-    }
 
     public function user(): BelongsTo
     {

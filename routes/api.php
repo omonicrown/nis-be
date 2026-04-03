@@ -84,18 +84,45 @@ Route::middleware(['auth:sanctum', 'approved'])->prefix('member')->group(functio
         $user = request()->user();
         $user->load(['membershipCategory', 'profile', 'subgroups', 'currentExecutivePosition']);
 
+        // Safe status label
+        $statusLabel = $user->status instanceof \App\Enums\UserStatus
+            ? $user->status->label()
+            : ucfirst($user->status ?? '');
+
+        // Safe counts — tables might not exist yet
+        try {
+            $upcomingMeetings = \App\Models\Meeting::upcoming()->count();
+        } catch (\Exception $e) {
+            $upcomingMeetings = 0;
+        }
+        try {
+            $pendingPayments = \App\Models\Payment::where('user_id', $user->id)->where('status', 'pending')->count();
+        } catch (\Exception $e) {
+            $pendingPayments = 0;
+        }
+        try {
+            $unreadAnnouncements = \App\Models\Announcement::active()->forMembers()->count();
+        } catch (\Exception $e) {
+            $unreadAnnouncements = 0;
+        }
+        try {
+            $unreadMessages = \App\Models\Message::unread($user->id)->count();
+        } catch (\Exception $e) {
+            $unreadMessages = 0;
+        }
+
         return response()->json([
             'success' => true,
             'data'    => [
                 'user'                 => new \App\Http\Resources\UserResource($user),
-                'membership_status'    => $user->status->label(),
+                'membership_status'    => $statusLabel,
                 'membership_category'  => $user->membershipCategory?->name,
                 'designation'          => $user->designation,
-                'profile_completed'    => $user->profile_completed,
-                'upcoming_meetings'    => \App\Models\Meeting::upcoming()->count(),
-                'pending_payments'     => \App\Models\Payment::where('user_id', $user->id)->pending()->count(),
-                'unread_announcements' => \App\Models\Announcement::active()->forMembers()->count(),
-                'unread_messages'      => \App\Models\Message::unread($user->id)->count(),
+                'profile_completed'    => (bool) $user->profile_completed,
+                'upcoming_meetings'    => $upcomingMeetings,
+                'pending_payments'     => $pendingPayments,
+                'unread_announcements' => $unreadAnnouncements,
+                'unread_messages'      => $unreadMessages,
             ],
         ]);
     });

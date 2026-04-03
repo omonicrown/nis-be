@@ -19,12 +19,9 @@ class Meeting extends Model
         'qr_code', 'qr_code_url', 'created_by',
     ];
 
-    protected function casts(): array
-    {
-        return [
+    protected $casts = [
             'meeting_date' => 'date',
         ];
-    }
 
     // ─── Relationships ──────────────────────────────────────
 

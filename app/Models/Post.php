@@ -17,13 +17,10 @@ class Post extends Model
         'is_pinned', 'published_at', 'author_id',
     ];
 
-    protected function casts(): array
-    {
-        return [
+    protected $casts = [
             'is_pinned'    => 'boolean',
             'published_at' => 'datetime',
         ];
-    }
 
     protected static function booted(): void
     {

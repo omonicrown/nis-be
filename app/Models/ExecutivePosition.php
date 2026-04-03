@@ -12,14 +12,11 @@ class ExecutivePosition extends Model
         'position_order', 'start_date', 'end_date', 'is_current',
     ];
 
-    protected function casts(): array
-    {
-        return [
+    protected $casts = [
             'start_date' => 'date',
             'end_date' => 'date',
             'is_current' => 'boolean',
         ];
-    }
 
     public function user(): BelongsTo
     {

@@ -12,14 +12,11 @@ class Message extends Model
         'read_at', 'sender_deleted', 'receiver_deleted',
     ];
 
-    protected function casts(): array
-    {
-        return [
+    protected $casts = [
             'read_at'          => 'datetime',
             'sender_deleted'   => 'boolean',
             'receiver_deleted' => 'boolean',
         ];
-    }
 
     public function sender(): BelongsTo
     {

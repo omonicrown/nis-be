@@ -7,12 +7,12 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class MemberProfileResource extends JsonResource
 {
-    public function toArray($request): array
+    public function toArray($request)
     {
         return [
             'office_address'           => $this->office_address,
             'residential_address'      => $this->residential_address,
-            'date_of_birth'            => $this->date_of_birth?->format('Y-m-d'),
+            'date_of_birth'            => $this->date_of_birth ? \Carbon\Carbon::parse($this->date_of_birth)->format('Y-m-d') : null,
             'bio'                      => $this->bio,
             'specialization'           => $this->specialization,
             'firm_name'                => $this->firm_name,

@@ -12,14 +12,11 @@ class PaymentReminder extends Model
         'reminders_sent', 'last_reminder_at', 'is_paid', 'payment_id',
     ];
 
-    protected function casts(): array
-    {
-        return [
+    protected $casts = [
             'amount_due'       => 'decimal:2',
             'last_reminder_at' => 'datetime',
             'is_paid'          => 'boolean',
         ];
-    }
 
     public function user(): BelongsTo
     {

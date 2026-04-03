@@ -2,13 +2,18 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\UserStatus;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class UserResource extends JsonResource
 {
-    public function toArray($request): array
+    public function toArray($request)
     {
+        // Handle status - might be enum or string depending on cast
+        $statusValue = $this->status instanceof UserStatus ? $this->status->value : $this->status;
+        $statusLabel = $this->status instanceof UserStatus ? $this->status->label() : ucfirst($this->status ?? '');
+
         return [
             'id'                    => $this->id,
             'first_name'            => $this->first_name,
@@ -23,10 +28,10 @@ class UserResource extends JsonResource
             'nis_membership_id'     => $this->nis_membership_id,
             'suffix'                => $this->suffix,
             'designation'           => $this->designation,
-            'status'                => $this->status?->value,
-            'status_label'          => $this->status?->label(),
-            'email_verified_at'     => $this->email_verified_at?->toIso8601String(),
-            'profile_completed'     => $this->profile_completed,
+            'status'                => $statusValue,
+            'status_label'          => $statusLabel,
+            'email_verified_at'     => $this->formatDate($this->email_verified_at),
+            'profile_completed'     => (bool) $this->profile_completed,
             'is_admin'              => $this->isAdmin(),
 
             // Relations (loaded conditionally)
@@ -44,8 +49,33 @@ class UserResource extends JsonResource
                 'position_order' => $this->currentExecutivePosition->position_order,
             ]),
 
-            'created_at'  => $this->created_at?->toIso8601String(),
-            'updated_at'  => $this->updated_at?->toIso8601String(),
+            'created_at'  => $this->formatDate($this->created_at),
+            'updated_at'  => $this->formatDate($this->updated_at),
         ];
+    }
+
+    /**
+     * Safely format a date field - handles Carbon objects, strings, and nulls.
+     */
+    private function formatDate($value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if ($value instanceof \Carbon\Carbon || $value instanceof \DateTimeInterface) {
+            return $value->toIso8601String();
+        }
+
+        // It's a raw string from DB - return as-is or try to parse
+        if (is_string($value)) {
+            try {
+                return \Carbon\Carbon::parse($value)->toIso8601String();
+            } catch (\Exception $e) {
+                return $value;
+            }
+        }
+
+        return null;
     }
 }

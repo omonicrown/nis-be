@@ -19,15 +19,12 @@ class Payment extends Model
         'payment_year', 'payment_period', 'receipt_number', 'paid_at',
     ];
 
-    protected function casts(): array
-    {
-        return [
+    protected $casts = [
             'amount'            => 'decimal:2',
             'paystack_metadata' => 'json',
             'verified_at'       => 'datetime',
             'paid_at'           => 'datetime',
         ];
-    }
 
     // ─── Relationships ──────────────────────────────────────
 

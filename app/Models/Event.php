@@ -20,9 +20,7 @@ class Event extends Model
         'registration_fee', 'registration_deadline', 'created_by',
     ];
 
-    protected function casts(): array
-    {
-        return [
+    protected $casts = [
             'start_date'            => 'date',
             'end_date'              => 'date',
             'is_virtual'            => 'boolean',
@@ -30,7 +28,6 @@ class Event extends Model
             'registration_fee'      => 'decimal:2',
             'registration_deadline' => 'datetime',
         ];
-    }
 
     protected static function booted(): void
     {

@@ -20,28 +20,33 @@ class EnsureAccountApproved
             ], 401);
         }
 
-        if ($user->status === UserStatus::PENDING) {
+        // Handle both enum and raw string
+        $status = $user->status instanceof UserStatus
+            ? $user->status->value
+            : $user->status;
+
+        if ($status === 'pending') {
             return response()->json([
                 'success' => false,
-                'message' => 'Your account is pending approval. Please wait for an admin to verify your account.',
+                'message' => 'Your account is pending approval.',
             ], 403);
         }
 
-        if ($user->status === UserStatus::SUSPENDED) {
+        if ($status === 'suspended') {
             return response()->json([
                 'success' => false,
                 'message' => 'Your account has been suspended. Please contact the admin.',
             ], 403);
         }
 
-        if ($user->status === UserStatus::REJECTED) {
+        if ($status === 'rejected') {
             return response()->json([
                 'success' => false,
-                'message' => 'Your registration was not approved. Please contact the admin for details.',
+                'message' => 'Your registration was not approved.',
             ], 403);
         }
 
-        if ($user->status !== UserStatus::ACTIVE) {
+        if ($status !== 'active') {
             return response()->json([
                 'success' => false,
                 'message' => 'Your account is not active.',

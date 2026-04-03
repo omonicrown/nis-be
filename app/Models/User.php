@@ -41,17 +41,14 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    protected function casts(): array
-    {
-        return [
+    protected $casts = [
             'email_verified_at' => 'datetime',
             'approved_at' => 'datetime',
-            'password' => 'hashed',
+            // 'password' => 'hashed',
             'status' => UserStatus::class,
             'is_migrated' => 'boolean',
             'profile_completed' => 'boolean',
         ];
-    }
 
     // ─── Accessors ──────────────────────────────────────────
 
@@ -109,12 +106,12 @@ class User extends Authenticatable
 
     public function scopeActive($query)
     {
-        return $query->where('status', UserStatus::ACTIVE);
+        return $query->where('status', 'active');
     }
 
     public function scopePending($query)
     {
-        return $query->where('status', UserStatus::PENDING);
+        return $query->where('status', 'pending');
     }
 
     public function scopeByCategory($query, $categorySlug)
@@ -130,10 +127,10 @@ class User extends Authenticatable
 
         return $query->where(function ($q) use ($search) {
             $q->where('first_name', 'like', "%{$search}%")
-              ->orWhere('last_name', 'like', "%{$search}%")
-              ->orWhere('email', 'like', "%{$search}%")
-              ->orWhere('nis_membership_id', 'like', "%{$search}%")
-              ->orWhere('surcon_reg_no', 'like', "%{$search}%");
+                ->orWhere('last_name', 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%")
+                ->orWhere('nis_membership_id', 'like', "%{$search}%")
+                ->orWhere('surcon_reg_no', 'like', "%{$search}%");
         });
     }
 
@@ -160,6 +157,7 @@ class User extends Authenticatable
 
     public function isApproved(): bool
     {
-        return $this->status === UserStatus::ACTIVE;
+        $status = $this->status instanceof \App\Enums\UserStatus ? $this->status->value : $this->status;
+        return $status === 'active';
     }
 }

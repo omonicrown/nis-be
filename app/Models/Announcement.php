@@ -12,13 +12,10 @@ class Announcement extends Model
         'is_active', 'expires_at', 'created_by',
     ];
 
-    protected function casts(): array
-    {
-        return [
+    protected $casts = [
             'is_active'  => 'boolean',
             'expires_at' => 'datetime',
         ];
-    }
 
     public function creator(): BelongsTo
     {

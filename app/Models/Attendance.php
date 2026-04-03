@@ -12,12 +12,9 @@ class Attendance extends Model
         'checked_in_at', 'marked_by', 'note',
     ];
 
-    protected function casts(): array
-    {
-        return [
+    protected $casts = [
             'checked_in_at' => 'datetime',
         ];
-    }
 
     // ─── Relationships ──────────────────────────────────────
 

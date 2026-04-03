@@ -128,7 +128,7 @@ class AttendanceUploadController extends Controller
      *
      * GET /api/admin/meetings/{meeting}/attendance/template
      */
-    public function downloadTemplate(Request $request, Meeting $meeting): JsonResponse
+    public function downloadTemplate(Request $request, Meeting $meeting)
     {
         $members = User::active()
             ->with('membershipCategory')
@@ -359,7 +359,7 @@ class AttendanceUploadController extends Controller
      *
      * GET /api/admin/reports/attendance/monthly/export?year=2026
      */
-    public function exportMonthlyReport(Request $request): mixed
+    public function exportMonthlyReport(Request $request)
     {
         $year = $request->get('year', date('Y'));
 

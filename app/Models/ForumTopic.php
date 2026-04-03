@@ -17,14 +17,11 @@ class ForumTopic extends Model
         'is_pinned', 'is_locked', 'views_count', 'last_reply_at',
     ];
 
-    protected function casts(): array
-    {
-        return [
+    protected $casts = [
             'is_pinned'     => 'boolean',
             'is_locked'     => 'boolean',
             'last_reply_at' => 'datetime',
         ];
-    }
 
     protected static function booted(): void
     {

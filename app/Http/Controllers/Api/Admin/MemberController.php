@@ -54,7 +54,8 @@ class MemberController extends Controller
      */
     public function approve(Request $request, User $user): JsonResponse
     {
-        if ($user->status !== UserStatus::PENDING) {
+        $status = $user->status instanceof UserStatus ? $user->status->value : $user->status;
+        if ($status !== 'pending') {
             return $this->error('Only pending members can be approved.');
         }
 
@@ -76,7 +77,8 @@ class MemberController extends Controller
      */
     public function reject(Request $request, User $user): JsonResponse
     {
-        if ($user->status !== UserStatus::PENDING) {
+        $status = $user->status instanceof UserStatus ? $user->status->value : $user->status;
+        if ($status !== 'pending') {
             return $this->error('Only pending members can be rejected.');
         }
 
@@ -115,7 +117,8 @@ class MemberController extends Controller
      */
     public function reactivate(User $user): JsonResponse
     {
-        if (!in_array($user->status, [UserStatus::SUSPENDED, UserStatus::INACTIVE])) {
+        $status = $user->status instanceof UserStatus ? $user->status->value : $user->status;
+        if (!in_array($status, ['suspended', 'inactive'])) {
             return $this->error('Only suspended or inactive members can be reactivated.');
         }
 

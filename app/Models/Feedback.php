@@ -14,12 +14,9 @@ class Feedback extends Model
         'admin_response', 'responded_by', 'responded_at',
     ];
 
-    protected function casts(): array
-    {
-        return [
+    protected $casts = [
             'responded_at' => 'datetime',
         ];
-    }
 
     public function user(): BelongsTo
     {

@@ -12,13 +12,10 @@ class MembershipCategory extends Model
         'requirements', 'annual_fee', 'rank', 'is_active',
     ];
 
-    protected function casts(): array
-    {
-        return [
+    protected $casts = [
             'annual_fee' => 'decimal:2',
             'is_active' => 'boolean',
         ];
-    }
 
     public function members(): HasMany
     {
