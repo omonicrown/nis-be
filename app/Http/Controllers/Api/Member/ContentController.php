@@ -60,7 +60,7 @@ class ContentController extends Controller
             ->active()
             ->forMembers()
             ->when($request->priority, fn($q, $p) => $q->where('priority', $p))
-            ->orderByRaw("FIELD(priority, 'urgent', 'high', 'normal', 'low')")
+            ->orderByRaw("array_position(ARRAY['urgent','high','normal','low'], priority)")
             ->orderByDesc('created_at')
             ->paginate($request->per_page ?? 10);
 

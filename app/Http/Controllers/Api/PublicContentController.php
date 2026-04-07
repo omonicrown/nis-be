@@ -82,7 +82,7 @@ class PublicContentController extends Controller
     {
         $announcements = Announcement::active()
             ->forPublic()
-            ->orderByRaw("FIELD(priority, 'urgent', 'high', 'normal', 'low')")
+            ->orderByRaw("array_position(ARRAY['urgent','high','normal','low'], priority)")
             ->orderByDesc('created_at')
             ->limit(10)
             ->get();
