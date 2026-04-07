@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Admin\AnnouncementController as AdminAnnouncementController;
 use App\Http\Controllers\Api\Admin\AttendanceUploadController;
 use App\Http\Controllers\Api\Admin\EventController as AdminEventController;
+use App\Http\Controllers\Api\Admin\ExecutiveController;
 use App\Http\Controllers\Api\Admin\FeedbackController as AdminFeedbackController;
 use App\Http\Controllers\Api\Admin\ForumController as AdminForumController;
 use App\Http\Controllers\Api\Admin\ImportController;
@@ -209,6 +210,16 @@ Route::middleware(['auth:sanctum', 'approved', 'role:super_admin,admin'])->prefi
     Route::put('/members/{user}/category', [AdminMemberController::class, 'updateCategory']);
     Route::post('/members/bulk-approve', [AdminMemberController::class, 'bulkApprove']);
     Route::put('/members/{user}/profile', [AdminMemberController::class, 'updateProfile']);
+
+
+    // Inside the admin group:
+    Route::get('/executives', [ExecutiveController::class, 'index']);
+    Route::post('/executives', [ExecutiveController::class, 'store']);
+    Route::get('/executives/{executive}', [ExecutiveController::class, 'show']);
+    Route::put('/executives/{executive}', [ExecutiveController::class, 'update']);
+    Route::post('/executives/{executive}/photo', [ExecutiveController::class, 'uploadPhoto']);
+    Route::delete('/executives/{executive}', [ExecutiveController::class, 'destroy']);
+    Route::post('/executives/reorder', [ExecutiveController::class, 'reorder']);
 
 
     Route::post('/meetings/{meeting}/attendance/upload', [AttendanceUploadController::class, 'upload']);
