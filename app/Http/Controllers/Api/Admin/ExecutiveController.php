@@ -59,6 +59,9 @@ class ExecutiveController extends Controller
             'is_active'      => ['nullable', 'boolean'],
             'start_date'     => ['nullable', 'date'],
             'end_date'       => ['nullable', 'date', 'after:start_date'],
+            'role_id'        => ['nullable', 'exists:roles,id'],
+            'permission_ids' => ['nullable', 'array'],
+            'permission_ids.*' => ['exists:permissions,id'],
         ]);
 
         $validated['is_active'] = $validated['is_active'] ?? true;
@@ -66,12 +69,41 @@ class ExecutiveController extends Controller
 
         $executive = ExecutivePosition::create($validated);
 
+        // If user_id is provided, assign them the role and permissions
+        if (!empty($validated['user_id'])) {
+            $user = User::find($validated['user_id']);
+
+            if ($user) {
+                // Assign role if provided
+                if (!empty($validated['role_id'])) {
+                    $user->update(['role_id' => $validated['role_id']]);
+                } else {
+                    // Default: assign admin role
+                    $adminRole = \App\Models\Role::where('slug', 'admin')->first();
+                    if ($adminRole) {
+                        $user->update(['role_id' => $adminRole->id]);
+                    }
+                }
+
+                // If custom permissions provided, update the role's permissions
+                if (!empty($validated['permission_ids']) && $user->role) {
+                    // Don't modify super_admin
+                    if ($user->role->slug !== 'super_admin') {
+                        $user->role->permissions()->sync($validated['permission_ids']);
+                    }
+                }
+            }
+        }
+
         return $this->created([
             'id'             => $executive->id,
             'title'          => $executive->title,
             'name'           => $executive->name,
             'designation'    => $executive->designation,
             'position_order' => $executive->position_order,
+            'user_id'        => $executive->user_id,
+            'role'           => $executive->user?->role?->name,
+            'permissions'    => $executive->user?->role?->permissions->pluck('slug'),
         ], 'Executive position created.');
     }
 
@@ -120,9 +152,24 @@ class ExecutiveController extends Controller
             'is_active'      => ['nullable', 'boolean'],
             'start_date'     => ['nullable', 'date'],
             'end_date'       => ['nullable', 'date'],
+            'role_id'        => ['nullable', 'exists:roles,id'],
+            'permission_ids' => ['nullable', 'array'],
+            'permission_ids.*' => ['exists:permissions,id'],
         ]);
 
         $executive->update($validated);
+
+        // Update the linked user's role and permissions
+        $user = $executive->user;
+        if ($user) {
+            if (!empty($validated['role_id'])) {
+                $user->update(['role_id' => $validated['role_id']]);
+            }
+
+            if (!empty($validated['permission_ids']) && $user->role && $user->role->slug !== 'super_admin') {
+                $user->role->permissions()->sync($validated['permission_ids']);
+            }
+        }
 
         return $this->success([
             'id'             => $executive->id,
@@ -130,6 +177,8 @@ class ExecutiveController extends Controller
             'name'           => $executive->name,
             'designation'    => $executive->designation,
             'position_order' => $executive->position_order,
+            'role'           => $user?->role?->name,
+            'permissions'    => $user?->role?->permissions->pluck('slug'),
         ], 'Executive position updated.');
     }
 

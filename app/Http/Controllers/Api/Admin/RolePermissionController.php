@@ -218,4 +218,37 @@ class RolePermissionController extends Controller
 
         return $modules;
     }
+
+
+    /**
+     * Create a new permission.
+     */
+    public function createPermission(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name'  => ['required', 'string', 'max:255'],
+            'slug'  => ['required', 'string', 'max:255', 'unique:permissions,slug'],
+            'group' => ['required', 'string', 'max:100'],
+        ]);
+
+        $permission = Permission::create($validated);
+
+        return $this->created([
+            'id'    => $permission->id,
+            'name'  => $permission->name,
+            'slug'  => $permission->slug,
+            'group' => $permission->group,
+        ], 'Permission created.');
+    }
+
+    /**
+     * Delete a permission.
+     */
+    public function deletePermission(Permission $permission): JsonResponse
+    {
+        $permission->roles()->detach();
+        $permission->delete();
+
+        return $this->success(null, 'Permission deleted.');
+    }
 }

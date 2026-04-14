@@ -350,6 +350,8 @@ Route::middleware('role:super_admin')->group(function () {
     Route::get('/admins', [RolePermissionController::class, 'admins']);
     Route::post('/users/{user}/assign-role', [RolePermissionController::class, 'assignRole']);
     Route::get('/users/{user}/permissions', [RolePermissionController::class, 'userPermissions']);
+    Route::post('/permissions', [RolePermissionController::class, 'createPermission']);
+    Route::delete('/permissions/{permission}', [RolePermissionController::class, 'deletePermission']);
 });
 
 // ─── Cron Routes ────────────────────────────────────────────────────
