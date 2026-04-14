@@ -200,6 +200,20 @@ Route::middleware(['auth:sanctum', 'approved'])->prefix('member')->group(functio
 
 Route::middleware(['auth:sanctum', 'approved', 'role:super_admin,admin'])->prefix('admin')->group(function () {
 
+
+    Route::middleware('role:super_admin')->group(function () {
+        Route::get('/roles', [RolePermissionController::class, 'roles']);
+        Route::post('/roles', [RolePermissionController::class, 'createRole']);
+        Route::put('/roles/{role}/permissions', [RolePermissionController::class, 'updateRolePermissions']);
+        Route::get('/permissions', [RolePermissionController::class, 'permissions']);
+        Route::get('/admins', [RolePermissionController::class, 'admins']);
+        Route::post('/users/{user}/assign-role', [RolePermissionController::class, 'assignRole']);
+        Route::get('/users/{user}/permissions', [RolePermissionController::class, 'userPermissions']);
+        Route::post('/permissions', [RolePermissionController::class, 'createPermission']);
+        Route::delete('/permissions/{permission}', [RolePermissionController::class, 'deletePermission']);
+    });
+
+
     // Members
     Route::get('/members', [AdminMemberController::class, 'index']);
     Route::get('/members/pending-count', [AdminMemberController::class, 'pendingCount']);
@@ -342,17 +356,7 @@ Route::middleware(['auth:sanctum', 'approved', 'role:super_admin,admin'])->prefi
     Route::get('/export/members', [ImportController::class, 'exportMembers']);
 });
 
-Route::middleware('role:super_admin')->group(function () {
-    Route::get('/roles', [RolePermissionController::class, 'roles']);
-    Route::post('/roles', [RolePermissionController::class, 'createRole']);
-    Route::put('/roles/{role}/permissions', [RolePermissionController::class, 'updateRolePermissions']);
-    Route::get('/permissions', [RolePermissionController::class, 'permissions']);
-    Route::get('/admins', [RolePermissionController::class, 'admins']);
-    Route::post('/users/{user}/assign-role', [RolePermissionController::class, 'assignRole']);
-    Route::get('/users/{user}/permissions', [RolePermissionController::class, 'userPermissions']);
-    Route::post('/permissions', [RolePermissionController::class, 'createPermission']);
-    Route::delete('/permissions/{permission}', [RolePermissionController::class, 'deletePermission']);
-});
+
 
 // ─── Cron Routes ────────────────────────────────────────────────────
 
