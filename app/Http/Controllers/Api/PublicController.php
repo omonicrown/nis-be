@@ -11,7 +11,7 @@ use App\Models\Subgroup;
 use App\Models\User;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Request;
+use Illuminate\Http\Request;
 
 class PublicController extends Controller
 {
