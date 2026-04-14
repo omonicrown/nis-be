@@ -8,8 +8,10 @@ use App\Http\Resources\SubgroupResource;
 use App\Models\ExecutivePosition;
 use App\Models\MembershipCategory;
 use App\Models\Subgroup;
+use App\Models\User;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Request;
 
 class PublicController extends Controller
 {
@@ -26,6 +28,43 @@ class PublicController extends Controller
             ->get();
 
         return $this->success(MembershipCategoryResource::collection($categories));
+    }
+
+    /**
+     * Search for a surveyor by name (public, no auth).
+     * GET /api/public/search-surveyor?q=Ajibade
+     */
+    public function searchSurveyor(Request $request): JsonResponse
+    {
+        $search = $request->get('q');
+
+        if (!$search || strlen($search) < 2) {
+            return $this->error('Please provide at least 2 characters to search.', 422);
+        }
+
+        $surveyors = User::where('status', 'active')
+            ->where(function ($query) use ($search) {
+                $query->where('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('other_names', 'like', "%{$search}%")
+                    ->orWhere('nis_membership_id', 'like', "%{$search}%")
+                    ->orWhere('surcon_reg_no', 'like', "%{$search}%");
+            })
+            ->select('id', 'first_name', 'last_name', 'other_names', 'email', 'phone', 'nis_membership_id', 'surcon_reg_no', 'membership_category_id')
+            ->with('membershipCategory:id,name,designation')
+            ->limit(20)
+            ->get()
+            ->map(fn($user) => [
+                'full_name'           => $user->full_name,
+                'email'               => $user->email,
+                'phone'               => $user->phone,
+                'nis_membership_id'   => $user->nis_membership_id,
+                'surcon_reg_no'       => $user->surcon_reg_no,
+                'membership_category' => $user->membershipCategory?->name,
+                'designation'         => $user->membershipCategory?->designation,
+            ]);
+
+        return $this->success($surveyors, "{$surveyors->count()} surveyor(s) found.");
     }
 
     /**

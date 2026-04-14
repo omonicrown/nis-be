@@ -45,6 +45,7 @@ class AuthController extends Controller
                     'first_name'             => $validated['first_name'],
                     'last_name'              => $validated['last_name'],
                     'other_names'            => $validated['other_names'] ?? null,
+                    'suffix'                 => $validated['suffix'] ?? null,
                     'email'                  => $validated['email'],
                     'phone'                  => $validated['phone'] ?? null,
                     'gender'                 => $validated['gender'] ?? null,
@@ -94,16 +95,19 @@ class AuthController extends Controller
     {
         $validated = $request->validated();
 
-        $user = User::where('email', $validated['email'])->first();
+        // Find user by NIS Membership ID
+        $user = User::where('nis_membership_id', $validated['nis_membership_id'])->first();
 
-        if (!$user || !Hash::check($validated['password'], $user->password)) {
-            return $this->error('Invalid email or password.', 401);
+        if (!$user || !\Illuminate\Support\Facades\Hash::check($validated['password'], $user->password)) {
+            return $this->error('Invalid NIS Membership ID or password.', 401);
         }
 
-        // Allow login but include status info so frontend can handle accordingly
-        $token = $user->createToken('auth-token', ['*'], now()->addDays(30))->plainTextToken;
+        // Delete old tokens (optional: keeps only 1 active session)
+        // $user->tokens()->delete();
 
-        $user->load(['membershipCategory', 'role', 'profile', 'subgroups']);
+        $token = $user->createToken('auth-token')->plainTextToken;
+
+        $user->load(['role', 'membershipCategory', 'profile', 'subgroups']);
 
         return $this->success([
             'user'  => new UserResource($user),

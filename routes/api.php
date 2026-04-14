@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\Api\Admin\PostController as AdminPostController;
 use App\Http\Controllers\Api\Admin\ReportController;
 use App\Http\Controllers\Api\Admin\ResourceController as AdminResourceController;
+use App\Http\Controllers\Api\Admin\RolePermissionController;
 use App\Http\Controllers\Api\Member\ContentController;
 use App\Http\Controllers\Api\Member\DirectoryController;
 use App\Http\Controllers\Api\Member\EventController as MemberEventController;
@@ -40,6 +41,7 @@ Route::prefix('public')->group(function () {
     Route::get('/membership-categories', [PublicController::class, 'membershipCategories']);
     Route::get('/subgroups', [PublicController::class, 'subgroups']);
     Route::get('/executives', [PublicController::class, 'executives']);
+    Route::get('/search-surveyor', [PublicController::class, 'searchSurveyor']);
 
     // Public content (Phase 5)
     Route::get('/posts', [PublicContentController::class, 'posts']);
@@ -338,6 +340,16 @@ Route::middleware(['auth:sanctum', 'approved', 'role:super_admin,admin'])->prefi
     Route::get('/import/existing', [ImportController::class, 'importExisting']);
     Route::get('/import/new', [ImportController::class, 'importNew']);
     Route::get('/export/members', [ImportController::class, 'exportMembers']);
+});
+
+Route::middleware('role:super_admin')->group(function () {
+    Route::get('/roles', [RolePermissionController::class, 'roles']);
+    Route::post('/roles', [RolePermissionController::class, 'createRole']);
+    Route::put('/roles/{role}/permissions', [RolePermissionController::class, 'updateRolePermissions']);
+    Route::get('/permissions', [RolePermissionController::class, 'permissions']);
+    Route::get('/admins', [RolePermissionController::class, 'admins']);
+    Route::post('/users/{user}/assign-role', [RolePermissionController::class, 'assignRole']);
+    Route::get('/users/{user}/permissions', [RolePermissionController::class, 'userPermissions']);
 });
 
 // ─── Cron Routes ────────────────────────────────────────────────────

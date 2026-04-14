@@ -8,27 +8,32 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CheckPermission
 {
-    /**
-     * Usage: ->middleware('permission:manage_members')
-     */
-    public function handle(Request $request, Closure $next, string $permission): Response
+    public function handle(Request $request, Closure $next, ...$permissions): Response
     {
         $user = $request->user();
 
         if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthenticated.',
-            ], 401);
+            return response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401);
         }
 
-        if (!$user->hasPermission($permission)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You do not have permission to perform this action.',
-            ], 403);
+        // Super admin bypasses all permission checks
+        if ($user->role?->slug === 'super_admin') {
+            return $next($request);
         }
 
-        return $next($request);
+        // Check if user's role has any of the required permissions
+        $userPermissions = $user->role?->permissions->pluck('slug')->toArray() ?? [];
+
+        foreach ($permissions as $permission) {
+            if (in_array($permission, $userPermissions)) {
+                return $next($request);
+            }
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'You do not have permission to access this resource.',
+            'required_permissions' => $permissions,
+        ], 403);
     }
 }

@@ -18,6 +18,7 @@ class RegisterRequest extends FormRequest
             'first_name'             => ['required', 'string', 'max:100'],
             'last_name'              => ['required', 'string', 'max:100'],
             'other_names'            => ['nullable', 'string', 'max:100'],
+            'suffix'                  => ['nullable', 'string', 'max:50'],
             'email'                  => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'phone'                  => ['nullable', 'string', 'max:20'],
             'gender'                 => ['nullable', 'in:male,female'],
