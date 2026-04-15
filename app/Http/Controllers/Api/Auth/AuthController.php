@@ -95,23 +95,46 @@ class AuthController extends Controller
     {
         $validated = $request->validated();
 
-        // Find user by NIS Membership ID
         $user = User::where('nis_membership_id', $validated['nis_membership_id'])->first();
 
         if (!$user || !\Illuminate\Support\Facades\Hash::check($validated['password'], $user->password)) {
             return $this->error('Invalid NIS Membership ID or password.', 401);
         }
 
-        // Delete old tokens (optional: keeps only 1 active session)
-        // $user->tokens()->delete();
-
         $token = $user->createToken('auth-token')->plainTextToken;
 
-        $user->load(['role', 'membershipCategory', 'profile', 'subgroups']);
+        $user->load(['role.permissions', 'membershipCategory', 'profile', 'subgroups']);
+
+        // Build permissions and modules
+        $isSuperAdmin = $user->role?->slug === 'super_admin';
+        $permissions = $isSuperAdmin
+            ? \App\Models\Permission::all()
+            : ($user->role?->permissions ?? collect());
+
+        $moduleMap = [
+            'members'       => ['manage_members', 'view_members', 'approve_members'],
+            'meetings'      => ['manage_meetings', 'view_meetings', 'manage_attendance'],
+            'payments'      => ['manage_payments', 'view_payments', 'verify_payments'],
+            'content'       => ['manage_posts', 'manage_events', 'manage_resources', 'manage_announcements'],
+            'forum'         => ['manage_forum'],
+            'feedback'      => ['manage_feedback'],
+            'reports'       => ['view_reports', 'export_reports'],
+            'settings'      => ['manage_settings', 'manage_roles'],
+            'import_export' => ['import_members', 'export_members'],
+            'executives'    => ['manage_executives'],
+        ];
+
+        $permSlugs = $permissions->pluck('slug')->toArray();
+        $modules = [];
+        foreach ($moduleMap as $module => $requiredPerms) {
+            $modules[$module] = $isSuperAdmin || count(array_intersect($permSlugs, $requiredPerms)) > 0;
+        }
 
         return $this->success([
-            'user'  => new UserResource($user),
-            'token' => $token,
+            'user'        => new \App\Http\Resources\UserResource($user),
+            'token'       => $token,
+            'permissions' => $permissions->pluck('slug'),
+            'modules'     => $modules,
         ], 'Login successful.');
     }
 
