@@ -44,11 +44,11 @@ class PublicController extends Controller
 
         $surveyors = User::where('status', 'active')
             ->where(function ($query) use ($search) {
-                $query->where('first_name', 'like', "%{$search}%")
-                    ->orWhere('last_name', 'like', "%{$search}%")
-                    ->orWhere('other_names', 'like', "%{$search}%")
-                    ->orWhere('nis_membership_id', 'like', "%{$search}%")
-                    ->orWhere('surcon_reg_no', 'like', "%{$search}%");
+                $query->where('first_name', 'ilike', "%{$search}%")
+                    ->orWhere('last_name', 'ilike', "%{$search}%")
+                    ->orWhere('other_names', 'ilike', "%{$search}%")
+                    ->orWhere('nis_membership_id', 'ilike', "%{$search}%")
+                    ->orWhere('surcon_reg_no', 'ilike', "%{$search}%");
             })
             ->select('id', 'first_name', 'last_name', 'other_names', 'email', 'phone', 'nis_membership_id', 'surcon_reg_no', 'membership_category_id')
             ->with('membershipCategory:id,name,designation')
