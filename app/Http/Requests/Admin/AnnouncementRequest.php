@@ -14,12 +14,14 @@ class AnnouncementRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title'      => ['required', 'string', 'max:255'],
-            'body'       => ['required', 'string'],
-            'priority'   => ['nullable', 'in:low,normal,high,urgent'],
-            'visibility' => ['nullable', 'in:all,members_only'],
-            'is_active'  => ['nullable', 'boolean'],
-            'expires_at' => ['nullable', 'date', 'after:now'],
+            'title'          => ['required', 'string', 'max:255'],
+            'body'           => ['required', 'string'],
+            'priority'       => ['nullable', 'in:low,normal,high,urgent'],
+            'visibility'     => ['nullable', 'in:all,members_only'],
+            'is_active'      => ['nullable', 'boolean'],
+            'expires_at'     => ['nullable', 'date', 'after:now'],
+            'subgroup_ids'   => ['nullable', 'array'],
+            'subgroup_ids.*' => ['exists:subgroups,id'],
         ];
     }
 }

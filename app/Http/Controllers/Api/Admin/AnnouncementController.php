@@ -16,9 +16,10 @@ class AnnouncementController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = Announcement::with('creator')
+        $query = Announcement::with(['creator', 'subgroups:id,name'])
             ->when($request->priority, fn($q, $p) => $q->where('priority', $p))
             ->when($request->visibility, fn($q, $v) => $q->where('visibility', $v))
+            ->when($request->subgroup_id, fn($q, $s) => $q->whereHas('subgroups', fn($sq) => $sq->where('subgroup_id', $s)))
             ->when($request->boolean('active_only'), fn($q) => $q->active())
             ->orderBy('created_at', 'desc');
 
@@ -28,35 +29,52 @@ class AnnouncementController extends Controller
     public function store(AnnouncementRequest $request): JsonResponse
     {
         $validated = $request->validated();
+        $subgroupIds = $validated['subgroup_ids'] ?? null;
+        unset($validated['subgroup_ids']);
+
         $validated['created_by'] = $request->user()->id;
 
         $announcement = Announcement::create($validated);
-        $announcement->load('creator');
+
+        if ($subgroupIds) {
+            $announcement->subgroups()->sync($subgroupIds);
+        }
+
+        $announcement->load(['creator', 'subgroups:id,name']);
 
         return $this->created(new AnnouncementResource($announcement), 'Announcement created.');
     }
 
     public function show(Announcement $announcement): JsonResponse
     {
-        $announcement->load('creator');
+        $announcement->load(['creator', 'subgroups:id,name']);
         return $this->success(new AnnouncementResource($announcement));
     }
 
     public function update(AnnouncementRequest $request, Announcement $announcement): JsonResponse
     {
-        $announcement->update($request->validated());
+        $validated = $request->validated();
+        $subgroupIds = $validated['subgroup_ids'] ?? null;
+        unset($validated['subgroup_ids']);
+
+        $announcement->update($validated);
+
+        if ($subgroupIds !== null) {
+            $announcement->subgroups()->sync($subgroupIds);
+        }
+
+        $announcement->load(['creator', 'subgroups:id,name']);
+
         return $this->success(new AnnouncementResource($announcement), 'Announcement updated.');
     }
 
     public function destroy(Announcement $announcement): JsonResponse
     {
+        $announcement->subgroups()->detach();
         $announcement->delete();
         return $this->success(null, 'Announcement deleted.');
     }
 
-    /**
-     * Toggle active status.
-     */
     public function toggleActive(Announcement $announcement): JsonResponse
     {
         $announcement->update(['is_active' => !$announcement->is_active]);

@@ -12,6 +12,11 @@ class AnnouncementResource extends JsonResource
         return [
             'id'         => $this->id,
             'title'      => $this->title,
+            'subgroups' => $this->whenLoaded('subgroups', fn() => $this->subgroups->map(fn($s) => [
+                'id'   => $s->id,
+                'name' => $s->name,
+            ])),
+            'target' => $this->whenLoaded('subgroups', fn() => $this->subgroups->isEmpty() ? 'All Members' : $this->subgroups->pluck('name')->join(', ')),
             'body'       => $this->body,
             'priority'   => $this->priority,
             'visibility' => $this->visibility,
